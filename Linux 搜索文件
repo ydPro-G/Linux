@@ -1,0 +1,35 @@
+whereis 【简单快速】
+whereis [文件名]：直接从数据库中查询。whereis 只能搜索二进制文件(-b)，man 帮助文件(-m)和源代码文件(-s)。
+
+locate 【快而全】
+locate /[目录]/[文件]：用来查找指定目录下的不同文件类型。
+提示;locate通过数据库查找，不过这个数据库也不是实时更新的，系统会使用定时任务每天自动执行 updatedb 命令更新一次，所以有时候你刚添加的文件，它可能会找不到，需要手动执行一次 updatedb 命令.
+sudo apt-get update
+sudo apt-get install locate
+locate /[目录]/[文件]
+
+查找/usr/share/下的所有.jpg文件
+locate /usr/share/\*.jpg
+注意：添加 * 号前面的反斜杠转义
+
+which 【小而精】
+which：是 Shell 内建的一个命令，我们通常使用 which 来确定是否安装了某个指定的软件，因为它只从 PATH 环境变量指定的路径中去搜索命令。
+which [软件]
+
+find【精而细】
+find:可以通过文件类型、文件名进行查找而且可以根据文件的属性（如文件的时间戳，文件的权限等）进行搜索.
+用法：sudo find [目录] [命令] [文件名]
+
+查找/etc/目录下的名字叫做interfaces文件
+sudo find /etc/ -name interfaces
+参数：
+-atime：最后访问时间
+-ctime:最后修改文件内容的时间
+-mtime:最后修改文件属性的时间
+
+列出 home 目录中，当天（24 小时之内）有改动的文件
+find ~ -mtime 0
+
+列出用户home目录下比 Code 文件夹新的文件
+find ~ -newer /home/shiyanlou/Code
+-newer file：file 为一个已存在的文件，列出比 file 还要新的文件名
