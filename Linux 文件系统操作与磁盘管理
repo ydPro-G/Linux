@@ -1,0 +1,75 @@
+基本操作
+
+df -h:查看主机磁盘的使用情况。
+物理主机上的 /dev/sda2 是对应着主机硬盘的分区，后面的数字表示分区号，数字前面的字母 a 表示第几块硬盘（也可能是可移动磁盘），如果主机上有多块硬盘则可能还会出现 /dev/sdb，/dev/sdc 这些磁盘设备都会在 /dev 目录下以文件的存在形式。
+du -h查看目录的容量
+du -h -d 0 ~只查看一级目录信息
+du -h -d 1 ~只查看二级目录信息
+-d:指定查看目录的深度
+-a：显示目录中所有文件的大小
+-s;仅显示总计
+
+简单磁盘操作
+dd也可以用在备份硬件的引导扇区、获取一定数量的随机数据或者空数据等任务中。dd程序也可以在复制时处理数据，例如转换字节序、或在 ASCII 与 EBCDIC 编码间互换。
+
+dd的命令行语句与其他的 Linux 程序不同，因为它的命令行选项格式为选项=值，而不是更标准的**–选项 值或-选项=值。dd默认从标准输入中读取**，并写入到标准输出中，但可以用选项if（input file，输入文件）和of（output file，输出文件）改变。
+
+1.从标准输入读取用户输入，输入到标准输出或文件中
+dd of=test bs=10 count=1:从标准输入中读取用户的输入，然后输入到标准输出中或一个文件中。
+of=test:of定义输出，test为输出到的文件名。
+bs=10:bs(block size)指定块大小（单位默认为Byte，也可指定K，M，G单位bs=1M）,10只读取10字节的数据。
+count=1:指定块数量,1只有1块
+注意：
+空格回车也算一字节。
+
+2.dd命令在拷贝的同时实现数据转换（例：大小写转换）
+dd if=/dev/stdin of=test bs=10 count=1 conv=ucase:将标准输入中的小写字母转换成大写字母
+/dev/stdin:dev/stdin fd/0 symbolic stdin(标准输入)文件描述
+参考链接：设备文件dev详解
+conv=ucare:将小写字母转换成大写字母
+
+3.使用dd命令创建虚拟镜像文件
+dd if=/dev/zero of=virtual.img bs=1M count=256:从/dev/zero设备创建一个容量为256M的空文件。
+sudo mkfs.ext4 virtual.img：将虚拟磁盘镜像格式化为ext4文件系统。
+mount -o loop -t ext4 virtual.img /mnt:将创建额虚拟磁盘镜像挂在在/mnt目录
+mount -o loop --ro virtual.img /mnt:以只读的方式挂载
+sudo umount /mnt:使用umount命令卸载已挂载磁盘
+
+4.磁盘分区
+sudo fdisk -l查看硬盘分区表信息
+sudo fdisk virtual.img；进入磁盘分区模式
+sudo losetuo /dev/loopO virtual.img:使用losetup命令建立镜像与回环设备的关联
+sudo losetup -d /dev/loopO:解除设备关联
+
+之后是使用mkfs格式化各分区，不过格式化前，我们还要为各分区建立虚拟设备的映射，用到kpartx工具，需要先安装
+sudo apt-get install kpartx
+sudp kpartx -av /dev/loopO
+取消映射：
+sudo kpartx -dv /dev/loopO
+全部格式化为ext4：
+sudo mkfs.ext4 -q /dev/mapper/loopOp1
+sudo mkfs.ext4 -q /dev/mapper/loopOp5
+sudo mkfs.ext4 -q /dev/mapper/loopOp6
+格式化完成后在/media目录下新建四个空目录用于挂载虚拟磁盘：
+mkdir -p /media/virtualdisk_{1..3}
+挂载磁盘分区：
+sudo mount /dev/mapper/loopOp1 /media/virtualdisk_1
+sudo mount /dev/mapper/loopOp5 /media/virtualdisk_2
+sudo mount /dev/mapper/loopOp6 /media/virtualdisk_3
+卸载磁盘分区：
+sudo umount /dev/mapper/loopOp1
+sudo umount /dev/mapper/loopOp5
+sudo umount /dev/mapper/loopOp6
+
+如何找到当前目录下占用最大的前十个文件：
+du -hsx * | sort -rh | head -10
+du -hsx:显示每个文件和目录的磁盘使用空间
+-h或–human-readable 以K，M，G为单位，提高信息的可读性。
+-s或–summarize 仅显示总计，只列出最后加总的值。
+-x或–one-file-xystem 以一开始处理时的文件系统为准，若遇上其它不同的文件系统目录则略过。
+
+sort -rh:将文件进行排序并输出
+-r：以相反的顺序来排序；
+
+head -10:显示文件的开头部分。
+-10:显示前十个
