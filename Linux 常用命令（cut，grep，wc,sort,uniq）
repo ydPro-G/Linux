@@ -1,0 +1,77 @@
+介绍
+学习linux系统上的常用命令。
+
+学习目录
+cut
+grep
+wc
+sort
+uniq
+1.cut命令
+连接文件并打印到标准输出设备上
+
+实例： cut /etc/passwd -d '：' -f 1,6:
+意义： 打印/etc/passwd文件中以:为分隔符的第1字段和第6字段。
+
+实例：打印etc/passwd中指定的字段
+cut /etc/passwd -c -7:打印前七个字段（包含第七个）
+cut /etc/passwd -c 7-:打印前七个字段之后的字段（包含第七个）
+cut /etc/passwd -c 7:打印第七个字段
+cut /etc/passwd -c 1-7:打印1-7字段（包含第七个）
+参考文章：https://wangchujiang.com/linux-command/c/cut.html
+
+2.grep命令
+强大的文本搜索工具，能够使用正则表达式搜索文本，并把匹配的行打印出来。用于过滤搜索的特定字符。
+命令的一般形式：grep [命令选项] "[文件"] 目录
+
+实例：grep -rnI "vim" ~（目录）:
+意义：搜索当前目录下所有带有vim 的文本文件。并显示出现在文本中的行号。
+r:表示递归搜索子目录中的文件
+n：表示打印匹配行项行号
+I：表示忽略二进制文件
+
+实例：export | grep “.*a$”:
+意义：产看环境变量中以“a”结尾的字符串
+export：为shell变量或函数设置导出属性
+|:管道
+*:所有
+$:表示一行的末尾，去掉就是搜索所有
+参考文章：https://wangchujiang.com/linux-command/c/grep.html#!kw=export
+
+3.wc命令
+统计文件的字节数、字数、行数。
+
+实例：
+wc /etc/passwd：输出passwd文件统计信息
+wc -l /etc/passwd:输出passwd文件行数
+wc -w /etc/passwd:输出passwd文件单词数
+wc -c /etc/passwd:输出passwd文件字节数
+wc -m /etc/passwd:输出passwd文件字符数
+wc -L /etc/passwd:输出passwd文件最长行字节数
+
+结合管道文件实际运用：
+任务：统计/etc目录下面所有的目录数
+ls -dl /etc/*/ | wc -l
+参考文章：https://wangchujiang.com/linux-command/c/wc.html
+
+4.sort命令
+将文件进行排序并输出。
+
+cat /etc/passwd | sort:默认字典排序
+cat /etc/passwd | sort -r:反转排序
+
+cat /etc/passwd | sort -t `:` -k 3 -n
+按特定字段排序
+-t：指定字段的分隔符
+-k 3：用于对哪一个字段进行排序
+-n：按照数字排序就要加上-n 参数
+参考文章
+
+uniq命令
+报告或忽略文件中的重复行
+
+实例：
+history | cut -c 8- | cut -d ' ' -f 1 | sort | uniq
+意义：使用history命令查看最近执行过的命令，cut去掉命令后面的参数，然后用sort排序，最后用uniq全文去重。
+uniq -dc：输出重复过的行及重复次数
+uniq -D：输出所有重复的行
