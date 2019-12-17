@@ -18,3 +18,4 @@ choose vim
 #在3点清零tmp目录中所有文件
 3.
 0 3 * * * sudo cp /var/log/alternatives.log /home/wrold/tmp/$(date +$/%Y-/%m-/%d)
+
