@@ -1,0 +1,20 @@
+要求:
+需要每天备份论坛数据（这里我们用 alternatives.log 日志），备份当天的日志并删除之前的日志。而且备份之后文件名是 年-月-日 的格式。alternatives.log 在 /var/log/ 下面。
+1.为 shiyanlou 用户添加计划任务
+2.每天凌晨 3 点的时候定时备份 alternatives.log 到 /home/world/tmp/ 目录
+3.命名格式为 年-月-日，比如今天是209年12月17日，那么文件名为 2019-12-17
+
+解答：
+1.进入crontab -e 添加
+2.在3点将/home/world/tmp/所有文件清零
+3.在3点将在/var/log目录下的alternatives.log文件CP到 /home/world/tmp文件中,然后以年-月-日命名文件
+
+1.
+crontab -e
+choose vim
+# 添加例行性工作排程
+2.
+0 3 * * * sudo rm /home/world/tmp/*
+#在3点清零tmp目录中所有文件
+3.
+0 3 * * * sudo cp /var/log/alternatives.log /home/wrold/tmp/$(date +$/%Y-/%m-/%d)
