@@ -1,0 +1,164 @@
+学习目录
+1.数据流重定向
+2.简单的重定向
+3.标准错误的重定向
+4.使用tee命令重定向到多个文件
+5.exec命令
+6.创建文件描述符
+7.关闭文件描述符
+8.完全屏蔽命令的输出
+9.使用xargs分割参数列表
+
+1.数据流重定向
+命令
+> : 覆盖文件内容并写入
+>>：在文件后面追加，不覆盖文件内容
+<：和>作用一样，表示从右到左
+<<:和>>作用一样，表示从右到左
+
+
+
+
+
+2.简单的重定向
+前置知识：文件描述符
+ 1.  文件描述符：0   设备文件：/dev/stdin    缩写：stdin    说明：标准输入
+ 2.  文件描述符：1   设备文件：/dev/stdout   缩写：stdout   说明：标准输出
+ 3.  文件描述符：2   设备文件：/dev/stderr   缩写：stderr   说明：标准错误
+参考网址：https://blog.csdn.net/xlinsist/article/details/51147212
+
+实例（1：
+
+mkdir Documents #创建目录
+cat > Documents/test.c << EOF   #将cat的连续输出重定向到一个文件中
+#include <stdio.h>
+int main()
+{
+    printf("hello world/n");
+    return 0;
+}
+EOF
+
+##（补充EOF：
+是END Of File的缩写,表示自定义终止符.既然自定义,那么EOF就不是固定的,可以随意设置别名,在linux按ctrl-d就代表EOF.
+EOF一般会配合cat能够多行文本输出.
+其用法如下:
+<<EOF //开始
+…
+EOF //结束）
+
+参考网址：https://www.cnblogs.com/xiaojianblogs/p/6486902.html
+
+cat Documents/test.c
+意义：将一个文件作为命令的输入（cat），标准输出作为命令的输出
+
+实例（2：
+
+ #将echo命令的输出从默认的标准输出重定向到一个普通文件
+echo 'hello world' > file 
+#查看文件
+cat file  
+
+
+
+
+
+3.标准错误的重定向
+实例（1：
+
+ #用bash提供的特殊的重定向符号“&”将标准错误和标准输出同时重定向到文件
+ cat [目录]/[标准输出文件] [标准错误文件] &> [文件] 
+实例（2：
+
+#将标准错误重定向到标准输出，将标准输出重定向到文件中，注意要将标准输出重定向到文件写在前面
+cat [目录]/[标准输出文件] [标准错误文件] > [文件] 2>&1 
+补充：在输出重定向文件描述符前加上&，否则shell会当作重定向到一个文件名为1的文件中
+
+
+
+
+
+4.使用tee命令同时重定向到多个文件
+实例（1：
+
+#将echo命令输出通过tee命令同时重定向到file1 file2 file3
+echo 'git is good' | tee file1 file2 file3  
+
+
+
+
+5.exec命令
+调用并执行指定的命令。
+exec命令 用于调用并执行指令的命令。exec命令通常用在shell脚本程序中，可以调用其他的命令。如果在当前终端中使用命令，则当指定的命令执行完毕后会立即退出终端。
+
+实例（1：
+
+zsh #进入子shell
+exec 1 > somefile   #使用exec替换当前进程的重定向，将标准输出（1）重定向到文件中
+         #后面执行的命令都将重定向到文件中，知道使用exit退出当前子shell
+ls            #ls命令重定向到文件（somefile）中
+ll            #ll命令重定向到文件（somefile）中
+pwd           #pwd命令重定向到文件（somefile）中
+exit          #退出
+cat somefile    #主进程查看文件（somefile）  ls ll  pwd命令会同时执行
+参考网址：https://blog.csdn.net/yanggd1987/article/details/38926901
+
+
+
+
+
+6.创建文件描述符
+Linux系统将所有设备都当作文件来处理，而Linux用文件描述符来标识每个文件对象。其实我们可以想象我们电脑的显示器和键盘在Linux系统中都被看作是文件，而它们都有相应的文件描述符与之对应。
+shell中有9个文件描述符，上面是用了它提供的默认的0,1,2文件描述符，另外我们还可以使用3—8文件描述符。
+
+cat /dev/fd;ls -Al:查看当前shell进程中打开的文件描述符。
+;:路径的分隔符
+
+实例（1：
+
+zsh #进入子shell
+exec 3 > somefile           #将文件描述符3重定向到文件中（somefile）
+cat /dev/fd;ls -Al;cd -     #查看当前shell中打开的文件描述符
+echo "this is test" >&3           #将echo命令的输出重定向到文件描述符3种
+cat somefile           #查看文件（somefile）
+exit           #退出
+参考网址：https://blog.csdn.net/xlinsist/article/details/51147212
+
+
+
+
+
+7.关闭文件描述符
+exec 3>&-:关闭文件描述符3
+
+
+
+
+
+
+
+
+8.完全屏蔽命令的输出
+前置知识
+/dev/null空设备，一般用来丢弃不需要的输出流
+
+实例（1：
+
+cat directory/file 1>/dev/null 2>&1    
+#将文件标准输出（1）重定向到/dev/null中，将标准错误（2）重定向到标准输出（1）中
+补充：
+cat：连接多个文件并打印到标准输出
+
+
+
+
+
+
+9.使用xargs分割参数列表
+将列表参数转换成小块分段传递给其他命令，以避免参数列表过长问题。
+
+实例（1：
+
+cut -d: -f1 < /etc/passwd | sort |xargs echo
+ #将/etc/passwd文件按:分割，取第一个字段排序后，使用echo命令生成一个列表。
+参考网址：https://wangchujiang.com/linux-command/c/xargs.html
